@@ -8,5 +8,7 @@ public abstract class MaxPoolingConvRBMLayer {
 
     public MaxPoolingConvRBMLayer child;
 
-    public abstract void sample() throws Exception;
+    public abstract void calculatePr() throws Exception;
+
+    public abstract void clear() throws Exception;
 }

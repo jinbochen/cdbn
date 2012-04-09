@@ -17,9 +17,7 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
     // Bias
     public double c;
     // Whether an input has been set
-    private boolean inputIsSet = false;
-    // Whether a sample has been calculated
-    private boolean sampled = false;
+    private boolean isInput = false;
 
     public MaxPoolingConvRBMInputLayer(CDBN cdbn) {
         this.cdbn = cdbn;
@@ -38,10 +36,14 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
     }
 
     @Override
-    public void sample() throws Exception {
+    public final void calculatePr() throws Exception {
+        // Make sure there is an input before sampling
+        if (!isInput) {
+            throw new Exception("Input is not set.");
+        }
         // Make sure there is a child layer
         if (child == null) {
-            throw new NullPointerException("The visible layer is not connected to a hidden layer.");
+            throw new NullPointerException("The input layer is not connected to a hidden layer.");
         }
         // Typecast the child to the hidden layer
         MaxPoolingConvRBMHiddenLayer hChild = ((MaxPoolingConvRBMHiddenLayer) child);
@@ -50,7 +52,7 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
         MathUtils.fill(sumWkConvhk, 0);
         for (int k = 0; k < cdbn.K; k++) {
             // Calculate Wk (convolution) hk
-            double[][] conv = MathUtils.convolutionBig(hChild.getSample(k), cdbn.N_H, cdbn.N_H, hChild.getWeights(k), cdbn.N_W, cdbn.N_W);
+            double[][] conv = MathUtils.convolutionBig(hChild.sample(k), cdbn.N_H, cdbn.N_H, hChild.getWeights(k), cdbn.N_W, cdbn.N_W);
             // Sum
             for (int i = 0; i < cdbn.N_V; i++) {
                 for (int j = 0; j < cdbn.N_V; j++) {
@@ -63,6 +65,24 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
             for (int j = 0; j < cdbn.N_V; j++) {
                 // Sigmoid of the (i, j)th element of sum over all k(Wk (convolution) hk) + the bias
                 pr[i][j] = MathUtils.SIGMOID.value(sumWkConvhk[i][j] + c);
+            }
+        }
+    }
+
+    @Override
+    public final double pr(int x, int y) throws Exception {
+        return pr[x][y];
+    }
+
+    @Override
+    public final double[][] sample() throws Exception {
+        // Make sure there is an input before sampling
+        if (!isInput) {
+            throw new Exception("Input is not set.");
+        }
+        // Calculate activation of the (i, j)th visible unit
+        for (int i = 0; i < cdbn.N_V; i++) {
+            for (int j = 0; j < cdbn.N_V; j++) {
                 // Set the unit to one with the calculated probability
                 if (MathUtils.RANDOM.nextDouble() <= pr[i][j]) {
                     sample[i][j] = 1;
@@ -71,27 +91,23 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
                 }
             }
         }
-        // Note that a sample has occurred
-        sampled = true;
+        return sample;
     }
 
+    // Does not clear weights
     @Override
-    public double getActivationPr(int x, int y) throws Exception {
-        return pr[x][y];
+    public final void clear() throws Exception {
+        // Note that the input is not set
+        isInput = false;
+        // Clear the child layer (and so on)
+        if (child != null) {
+            child.clear();
+        }
     }
 
-    @Override
-    public double[][] getSample() throws Exception {
-        if (sampled) {
-            return sample;
-        }
-        if (!inputIsSet) {
-            throw new Exception("Set the input of the visible layer.");
-        }
-        return input;
-    }
-
-    public void setInput(Input in) throws NullPointerException {
+    public final void setInput(Input in) throws Exception {
+        // Clears out everything but the weights for the entire DBN
+        clear();
         // Set the input
         for (int i = 0; i < cdbn.N_V; i++) {
             for (int j = 0; j < cdbn.N_V; j++) {
@@ -103,8 +119,9 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
             }
         }
         // Note that the input has been set
-        inputIsSet = true;
-        // Note that this input has not been sampled
-        sampled = false;
+        isInput = true;
+        // The activation probabilities and sample are the same as input
+        MathUtils.copy(input, pr);
+        MathUtils.copy(input, sample);
     }
 }

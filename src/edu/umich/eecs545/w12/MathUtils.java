@@ -36,6 +36,14 @@ public class MathUtils {
         }
     }
 
+    public static void copy(double[][] from, double[][] to) {
+        for (int i = 0; i < from.length; i++) {
+            for (int j = 0; j < from[i].length; j++) {
+                to[i][j] = from[i][j];
+            }
+        }
+    }
+
     public static double[][] convolutionBig(double[][] input, int inputWidth, int inputHeight, double[][] kernel, int kernelWidth, int kernelHeight) {
         int outputWidth = inputWidth + kernelWidth - 1;
         int outputHeight = inputHeight + kernelHeight - 1;

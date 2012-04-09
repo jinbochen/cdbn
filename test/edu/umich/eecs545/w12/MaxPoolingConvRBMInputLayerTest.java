@@ -15,8 +15,8 @@ public class MaxPoolingConvRBMInputLayerTest extends TestCase {
         // Set the input
         cdbn.inputLayer.setInput(TestUtils.getInput());
         // Sample the hidden layer
-        convRBM.H.sample();
+        convRBM.H.calculatePr();
         // Sample the input layer
-        cdbn.inputLayer.sample();
+        cdbn.inputLayer.calculatePr();
     }
 }

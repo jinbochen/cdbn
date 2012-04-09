@@ -24,6 +24,8 @@ public class MaxPoolingConvRBMHiddenLayer extends MaxPoolingConvRBMLayer {
     public final double[][][] W;
     // K biases
     public final double[] b;
+    // Whether the activation probabilities have been calculated
+    private boolean isPr = false;
 
     public MaxPoolingConvRBMHiddenLayer(MaxPoolingConvRBM convRBM, MaxPoolingConvRBMVisibleLayer parent) throws NullPointerException {
         // Check for null
@@ -93,9 +95,9 @@ public class MaxPoolingConvRBMHiddenLayer extends MaxPoolingConvRBMLayer {
     }
 
     @Override
-    public final void sample() throws Exception {
+    public void calculatePr() throws Exception {
         // Access the activations of the parent layer
-        double[][] v = parent.getSample();
+        double[][] v = parent.sample();
         // Sample and store the activations of the hidden units
         for (int k = 0; k < convRBM.cdbn.K; k++) {
             // Calculate the (W(flipped)k (convolution) v)
@@ -108,27 +110,49 @@ public class MaxPoolingConvRBMHiddenLayer extends MaxPoolingConvRBMLayer {
                 for (int j = 0; j < convRBM.cdbn.N_H; j++) {
                     // Sigmoid of the (i, j)th element of (W(flipped)k convolution v) plus the bias
                     pr[k][i][j] = MathUtils.SIGMOID.value(WFlippedConvv[i][j] + bk);
-                    // Set the unit to one with the calculated probability
-                    if (MathUtils.RANDOM.nextDouble() <= pr[k][i][j]) {
-                        h[k][i][j] = 1;
-                    } else {
-                        h[k][i][j] = 0;
-                    }
                 }
             }
         }
+        // Note that the activation probabilities have been calculated
+        isPr = true;
     }
 
-    public final double[][] getSample(int k) throws Exception {
+    public final double[][] sample(int k) throws Exception {
+        // Need to calculate activation probabilities?
+        if (!isPr) {
+            throw new Exception("Activation probabilities have not yet been calculated.");
+        }
+        // Draw a sample activation for the (i, j)th unit of the kth unit group
+        for (int i = 0; i < convRBM.cdbn.N_H; i++) {
+            for (int j = 0; j < convRBM.cdbn.N_H; j++) {
+                // Set the unit to one with the calculated probability
+                if (MathUtils.RANDOM.nextDouble() <= pr[k][i][j]) {
+                    h[k][i][j] = 1;
+                } else {
+                    h[k][i][j] = 0;
+                }
+            }
+        }
         return h[k];
     }
 
     public final double[][] getWeights(int k) throws Exception {
         return W[k];
     }
-    
+
     public final void setWeights(int k, double[][] weights) throws Exception {
         W[k] = weights;
+    }
+    
+    // Does not clear weights
+    @Override
+    public void clear() throws Exception {
+        // Note that the probabilities have not been calculated
+        isPr = false;
+        // Clear the child layer (and so on)
+        if (child != null) {
+            child.clear();
+        }
     }
 
     public final void write(PrintStream out) throws IOException, NullPointerException {

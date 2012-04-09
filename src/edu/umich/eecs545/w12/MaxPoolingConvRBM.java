@@ -58,15 +58,15 @@ public class MaxPoolingConvRBM {
         for (int iteration = 0; iteration < TRAINING_ITERATIONS; iteration++) {
             // TODO: gradually reduce the learning rate
             // Sample the hidden layer;
-            H.sample();
+            H.calculatePr();
             // Sample the visible layer
-            H.parent.sample();
-            // Calculate the KL divergence of the reconstructed image
+            H.parent.calculatePr();
+            // Calculate the KL divergence of the reconstructed image from the original
             double D = 0;
             for (int x = 0; x < cdbn.N_V; x++) {
                 for (int y = 0; y < cdbn.N_V; y++) {
                     if (cdbn.inputLayer.input[x][y] > 0) {
-                        D += cdbn.inputLayer.input[x][y] * Math.log(cdbn.inputLayer.input[x][y] / H.parent.getActivationPr(x, y));
+                        D += cdbn.inputLayer.input[x][y] * Math.log(cdbn.inputLayer.input[x][y] / H.parent.pr(x, y));
                     }
                 }
             }

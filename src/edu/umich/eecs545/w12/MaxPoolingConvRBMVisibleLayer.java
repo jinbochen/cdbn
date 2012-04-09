@@ -6,7 +6,7 @@ package edu.umich.eecs545.w12;
  */
 public abstract class MaxPoolingConvRBMVisibleLayer extends MaxPoolingConvRBMLayer {
 
-    public abstract double getActivationPr(int x, int y) throws Exception;
+    public abstract double pr(int x, int y) throws Exception;
     
-    public abstract double[][] getSample() throws Exception;
+    public abstract double[][] sample() throws Exception;
 }
