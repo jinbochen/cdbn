@@ -71,6 +71,10 @@ public class MaxPoolingConvRBMInputLayer extends MaxPoolingConvRBMVisibleLayer {
 
     @Override
     public final double pr(int x, int y) throws Exception {
+        // Make sure there is an input before sampling
+        if (!isInput) {
+            throw new Exception("Input is not set.");
+        }
         return pr[x][y];
     }
 

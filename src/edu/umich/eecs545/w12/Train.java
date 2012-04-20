@@ -2,16 +2,8 @@ package edu.umich.eecs545.w12;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import libsvm.svm;
-import libsvm.svm_model;
-import libsvm.svm_node;
-import libsvm.svm_parameter;
-import libsvm.svm_problem;
 
 /**
  * TODO: handle inputs that are larger than memory by loading them only as needed
@@ -41,7 +33,7 @@ public class Train {
         if (inputDimensions < 2) {
             throw new Exception("Number of point cloud dimensions must be at least 2.");
         }
-        
+
         // Access the C-DBN model output file
         File outputFile = new File(args[argCount++]);
         // Check if exists
@@ -70,7 +62,7 @@ public class Train {
         if (C <= 0) {
             throw new Exception("Pooling layer dimension size must be greater than zero.");
         }
-        
+
         // Get K
         int K = Integer.valueOf(args[argCount++]);
         if (K <= 0) {
@@ -122,48 +114,5 @@ public class Train {
 
         // Write the learned CDBN to disk
         cdbn.write(outputFile);
-
-        // Format the training data for SVM classification using the CDBN pooling layer(s) activations as features
-        svm_problem problem = new svm_problem();
-        // l appears to be the number of training samples
-        // TODO: confirm
-        problem.l = segments.size();
-        // Get the activiation features from the CDBN
-        {
-            ArrayList<svm_node[]> svmTrainingSamples = new ArrayList<svm_node[]>();
-            for (Input segment : segments) {
-                svmTrainingSamples.add(cdbn.getSVMFeatures(segment));
-            }
-            problem.x = svmTrainingSamples.toArray(new svm_node[0][0]);
-        }
-        // y is probably the labels
-        // TODO: confirm
-        {
-            double[] labels = new double[segments.size()];
-            Set<Integer> labelSet = new HashSet<Integer>();
-            for (Input segment : segments) {
-                labelSet.add(segment.label);
-            }
-            problem.y = labels;
-        }
-
-        // Set the training parameters
-        svm_parameter param = new svm_parameter();
-        // Type
-        // 0 -- C-SVC (classification)
-	// 1 -- nu-SVC (classification)
-	// 2 -- one-class SVM
-	// 3 -- epsilon-SVR (regression)
-	// 4 -- nu-SVR (regression)
-        param.svm_type = 0;
-        // Other C-SVC parameters:
-        // param.weight[] : sets the parameter C of class i to weight*c (default 1)
-        // param.C : cost, set the parameter C of C-SVC (default 1)
-
-        // Train the SVM classifier
-        svm_model svmModel = svm.svm_train(problem, param);
-
-        // Save the trained SVM classifier
-        LibSVMUtils.write(svmModel, outputSVMFile);
     }
 }

@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.LinkedList;
-import libsvm.svm_node;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -23,7 +22,7 @@ public class CDBN {
     // Version
     public static final String VERSION = "1.0";
     // Default parameter values
-    public static final int DEFAULT_STACKED_CONVRBMS = 2;
+    public static final int DEFAULT_STACKED_CONVRBMS = 1;
     // How many stacked conv-RBM's do we want to have?
     public int stackedConvRBMCount = DEFAULT_STACKED_CONVRBMS;
     // How many dimensions is the input data?
@@ -118,14 +117,6 @@ public class CDBN {
         } finally {
             IOUtils.closeQuietly(in);
         }
-    }
-
-    public svm_node[] getSVMFeatures(Input input) throws Exception {
-        // Check null
-        if (input == null) {
-            throw new NullPointerException("Input is null.");
-        }
-        throw new RuntimeException("TODO");
     }
 
     // Train the C-DBN

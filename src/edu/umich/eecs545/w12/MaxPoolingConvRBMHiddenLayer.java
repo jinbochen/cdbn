@@ -116,7 +116,7 @@ public class MaxPoolingConvRBMHiddenLayer extends MaxPoolingConvRBMLayer {
         // Note that the activation probabilities have been calculated
         isPr = true;
     }
-
+    
     public final double[][] sample(int k) throws Exception {
         // Need to calculate activation probabilities?
         if (!isPr) {

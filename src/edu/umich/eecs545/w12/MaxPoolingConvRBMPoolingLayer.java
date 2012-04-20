@@ -14,6 +14,9 @@ public class MaxPoolingConvRBMPoolingLayer extends MaxPoolingConvRBMVisibleLayer
     private MaxPoolingConvRBM convRBM;
     // The hidden layer upon which this layer sits
     private MaxPoolingConvRBMHiddenLayer H;
+    // A sample activation for the units in this layer
+    // The activation probabilities for the units in this layer
+    private final double[][][] pr;
     // Whether the activation probabilities have been calculated
     private boolean isPr = false;
 
@@ -27,6 +30,7 @@ public class MaxPoolingConvRBMPoolingLayer extends MaxPoolingConvRBMVisibleLayer
         }
         this.convRBM = convRBM;
         this.H = H;
+        this.pr = new double[convRBM.cdbn.K][convRBM.cdbn.N_P][convRBM.cdbn.N_P];
     }
 
     public MaxPoolingConvRBMPoolingLayer(MaxPoolingConvRBM convRBM, BufferedReader in) throws IOException, NullPointerException {
@@ -42,7 +46,9 @@ public class MaxPoolingConvRBMPoolingLayer extends MaxPoolingConvRBMVisibleLayer
 
     @Override
     public void calculatePr() throws Exception {
-        throw new RuntimeException("TODO");
+        // From Lee et al. (2009):
+        //  Compute the maximum activation probability of the units in a small region of the hidden layer
+        
     }
 
     // Does not clear weights
@@ -63,6 +69,10 @@ public class MaxPoolingConvRBMPoolingLayer extends MaxPoolingConvRBMVisibleLayer
 
     @Override
     public double[][] sample() throws Exception {
+        // Need to calculate activation probabilities?
+        if (!isPr) {
+            throw new Exception("Activation probabilities have not yet been calculated.");
+        }
         throw new RuntimeException("TODO");
     }
 

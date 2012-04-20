@@ -54,14 +54,22 @@ public class MaxPoolingConvRBM {
         // With contrastive divergence (CD):
         //  Initialize the Markov chain with a training example so it's already close to the final distribution (rather than start from scratch)
         //  Do not wait for the chain to converge... stop after k steps of Gibbs sampling
-        // Train the hidden layer given parent layer
+        // Train the hidden layer given the parent layer
         for (int iteration = 0; iteration < TRAINING_ITERATIONS; iteration++) {
             // TODO: gradually reduce the learning rate
-            // Sample the hidden layer;
+            // Calculate the activation probabilities of the hidden layer
             H.calculatePr();
-            // Sample the visible layer
+            // Sample from the calculated distribution for every hidden unit group
+            double[][][] h0 = new double[cdbn.K][cdbn.N_H][cdbn.N_H];
+            for (int k = 0; k < cdbn.K; k++) {
+                h0[k] = H.sample(k);
+            }
+            // Calculate the activation probabilities of the parent layer
             H.parent.calculatePr();
+            // Sample from the calculated distribution
+            H.parent.sample();
             // Calculate the KL divergence of the reconstructed image from the original
+            //  This is used to gauge the effectiveness of the learning
             double D = 0;
             for (int x = 0; x < cdbn.N_V; x++) {
                 for (int y = 0; y < cdbn.N_V; y++) {
@@ -71,12 +79,18 @@ public class MaxPoolingConvRBM {
                 }
             }
             System.out.println("KL divergence: " + D);
-            //
+            // Recalculate the activation probabilities of the hidden layer
+            H.calculatePr();
+
+            // Update the weights for each of the hidden unit groups
+            for (int k = 0; k < cdbn.K; k++) {
+                throw new RuntimeException("TODO");
+            }
         }
         // Train the pooling layer given the hidden layer
         for (int iteration = 0; iteration < TRAINING_ITERATIONS; iteration++) {
+            throw new RuntimeException("TODO");
         }
-        throw new RuntimeException("TODO");
     }
 
     public void write(PrintStream out) throws IOException, NullPointerException {
